@@ -3,14 +3,14 @@
 
 <head>
     <meta charset="utf-8">
-    <title>WhereIsFelix.today</title>
-    <meta name="description" content="Where is Felix?">
+    <title>Where is Akos?</title>
+    <meta name="description" content="Where is Akos?">
     <meta name="viewport" content="width=device-width, user-scalable=no" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 </head>
 
 <body *ngIf="data.loading">
-    <h1 id="findingFelix">Finding Felix...</h1>
+    <h1 id="findingAkos">Finding Akos...</h1>
 </body>
 
 <body *ngIf="data.currentCityText">
@@ -45,8 +45,8 @@
             <div id="story-available"></div>
             <img src="{{data.profilePictureUrl}}" id="storyProfilePicture" onclick="showStories()" />
 
-            <h1 *ngIf="!data.isMoving">Felix is currently in <b>{{data.currentCityText}}</b></h1>
-            <h1 *ngIf="data.isMoving">Felix is currently flying to <b>{{data.currentCityText}}</b></h1>
+            <h1 *ngIf="!data.isMoving">Akos is currently in <b>{{data.currentCityText}}</b></h1>
+            <h1 *ngIf="data.isMoving">Akos is currently flying to <b>{{data.currentCityText}}</b></h1>
             <h3 *ngIf="data.nextCityText">Leaving for {{data.nextCityText}} {{data.nextCityDate}}</h3>
             <table *ngIf="data.nextCityText">
                 <thead>
@@ -67,31 +67,31 @@
             <hr />
             <span *ngIf="data.currentMoodLevel">
         <h1 style="margin-bottom: 30px">
-          Felix feels <b>{{data.currentMoodLevel}}</b> {{data.currentMoodEmoji}}
+          Akos feels <b>{{data.currentMoodLevel}}</b> {{data.currentMoodEmoji}}
           <span class="footnote">({{data.currentMoodRelativeTime}})</span>
             </h1>
 
             <hr />
             </span>
 
-            <!-- <p style="text-align: center; margin-bottom: -12px; margin-top: -10px" class="footnote">Current time for Felix</p>
+            <!--<p style="text-align: center; margin-bottom: -12px; margin-top: -10px" class="footnote">Current time for Akos</p> 
       <h1>{{data.localTime}}</h1>
-      <hr /> -->
+      <hr />-->
 
             <span *ngIf="data.todaysMacros.kcal > 0">
-        <h1 style="margin-bottom: 10px">Felix ate today</h1>
+        <h1 style="margin-bottom: 10px">Akos ate today</h1>
         <div class="foodContainer">
           <span>
-            <b>{{data.todaysMacros.kcal}} kcal</b>of {{data.otherFxLifeData["macrosCarbs"]["value"] * 4 + data.otherFxLifeData["macrosProtein"]["value"] * 4 + data.otherFxLifeData["macrosFat"]["value"] * 9}} kcal
+            <b>{{data.todaysMacros.kcal}} kcal</b><!-- of {{data.otherFxLifeData["macrosCarbs"]["value"] * 4 + data.otherFxLifeData["macrosProtein"]["value"] * 4 + data.otherFxLifeData["macrosFat"]["value"] * 9}} kcal-->
           </span>
             <span>
-            <b>{{data.todaysMacros.carbs}}g carbs</b>of {{data.otherFxLifeData["macrosCarbs"]["value"]}}g
+            <b>{{data.todaysMacros.carbs}}g carbs</b><!-- of {{data.otherFxLifeData["macrosCarbs"]["value"]}}g -->
           </span>
             <span>
-            <b>{{data.todaysMacros.protein}}g protein</b>of {{data.otherFxLifeData["macrosProtein"]["value"]}}g
+            <b>{{data.todaysMacros.protein}}g protein</b><!-- of {{data.otherFxLifeData["macrosProtein"]["value"]}}g -->
           </span>
             <span>
-            <b>{{data.todaysMacros.fat}}g fat</b>of {{data.otherFxLifeData["macrosFat"]["value"]}}g
+            <b>{{data.todaysMacros.fat}}g fat</b><!-- of {{data.otherFxLifeData["macrosFat"]["value"]}}g -->
           </span>
         </div>
 
@@ -123,11 +123,14 @@
         <hr />
         </span>
 
-        <h1 style="margin-bottom: -12px; margin-top: -10px; font-size: 115%">Number of personal open Todo items</h1>
-        <h1><b>{{data.numberOfTodoItems}}</b></h1>
+        <h1 style="margin-bottom: -12px; margin-top: -10px; font-size: 115%">Open personal Todo items</h1>
+        <h1><b>{{data.numberOfPersonalTodoItems}}</b></h1>
+
+        <h1 style="margin-bottom: -12px; margin-top: -10px; font-size: 115%">Open work Todo items</h1>
+        <h1><b>{{data.numberOfWorkTodoItems}}</b></h1>
         <hr />
 
-        <div style="margin-top: 20px; margin-left: auto; margin-right: auto; text-align: left; width: 350px;">
+        <!--<div style="margin-top: 20px; margin-left: auto; margin-right: auto; text-align: left; width: 350px;">
             <p>
                 <span class="leftCol">Weight</span><b>{{(data.otherFxLifeData["weight"]["value"] * 0.453592) | number:'1.0-2'}} kg</b> / {{data.otherFxLifeData["weight"]["value"] | number:'1.0-2'}} lbs
                 <span class="footnote" style="margin-left: 5px">({{data.otherFxLifeData["weight"]["time"] | amTimeAgo}})</span>
@@ -139,7 +142,7 @@
             <p><span class="leftCol">Computer time</span> <b>{{data.otherFxLifeData["totalComputerUsageHours"]["value"] | number: '.'}} hours</b> since 2013</p>
             <p><span class="leftCol">Last meditated</span> <b>{{today | amDifference: data.otherFxLifeData["meditated"]["time"] :'days'}} days ago</b></p>
         </div>
-        <hr />
+        <hr />-->
 
         <!-- <h2>Recent photos</h2>
       <div class="recentPhotos">
@@ -210,15 +213,6 @@
         <footer>
             <p>
                 Fork this page <a href="https://github.com/krausefx/whereisfelix.today" target="_blank">on GitHub</a>
-            </p>
-            <p>
-                Trip data comes from <a href="https://nomadlist.com/@krausefx" target="_blank">nomadlist.com</a>
-            </p>
-            <p>
-                Mood data comes from <a href="https://github.com/krausefx/mood" target="_blank">my mood bot</a>
-            </p>
-            <p>
-                How do I travel? <a href="https://krausefx.com/blog/going-nomad" target="_blank">I live out of a suitcase</a>
             </p>
         </footer>
     </div>

@@ -10,12 +10,13 @@ var mfp = require("mfp"); // MyFitnessPal
 app.use(cors());
 
 // Metadata
-let nomadlistUser = "krausefx";
+let nomadlistUser = "akos";
+var nomadlistKey = process.env.NOMADLIST_KEY;
 let lifesheetURL = "https://fx-life-sheet.herokuapp.com/";
 let googleMapsKey = "AIzaSyDeiw5iiluUP6Txt7H584no1adlsDj-jUc";
-let githubUser = "KrauseFx";
-let githubFullName = "Felix Krause";
-let myFitnessPalUser = "krausefx1";
+let githubUser = "akoss";
+let githubFullName = "Akos Szente";
+let myFitnessPalUser = "akosur";
 
 // Interfaces
 interface Conference {
@@ -74,12 +75,17 @@ let lastCommitLink: String;
 let lastCommitTimestamp: Date;
 let todaysMacros: Food;
 let todaysFoodItems: Array<FoodItem> = [];
-let numberOfTodoItems: number;
+let numberOfPersonalTodoItems: number;
+let numberOfWorkTodoItems: number;
 
 // Refresher methods
 function updateNomadListData() {
   nextStays = [];
-  let nomadlistUrl = "https://nomadlist.com/@" + nomadlistUser + ".json";
+  let nomadlistUrl =
+    "https://nomadlist.com/@" +
+    nomadlistUser +
+    ".json" +
+    (nomadlistKey ? "?key=" + nomadlistKey : "");
 
   needle.get(nomadlistUrl, function(error, response, body) {
     if (error) {
@@ -205,33 +211,42 @@ function updateCommitMessage() {
   });
 }
 
-function fetchTrelloItems() {
-  // via https://developers.trello.com/reference#boardsboardidlabels
+function fetchTrelloItemsFromOneBoard(board_id, isWork) {
   let trelloUrl =
     "https://api.trello.com/1/boards/" +
-    process.env.TRELLO_BOARD_ID +
+    board_id +
     "/lists?cards=open&card_fields=all&filter=open&fields=all&key=" +
     process.env.TRELLO_API_KEY +
     "&token=" +
     process.env.TRELLO_API_TOKEN;
 
-  numberOfTodoItems = 0;
-
   needle.get(trelloUrl, function(error, response, body) {
+    let numberOfTodoItems = 0;
     if (error) {
       console.error(error);
     }
     if (response.statusCode == 200) {
       for (var i in body) {
         let currentList = body[i];
-        if (currentList["name"] != "Done") {
+        if (!currentList["name"].startsWith("Done")) {
           numberOfTodoItems += currentList["cards"].length;
         }
       }
+    } else {
+      console.error("error fetching Trello tasks: " + response.statusCode);
     }
-
-    console.log("Number of Trello tasks: " + numberOfTodoItems);
+    if (isWork) {
+      numberOfWorkTodoItems = numberOfTodoItems;
+    } else {
+      numberOfPersonalTodoItems = numberOfTodoItems;
+    }
   });
+}
+
+function fetchTrelloItems() {
+  // via https://developers.trello.com/reference#boardsboardidlabels
+  fetchTrelloItemsFromOneBoard(process.env.TRELLO_WORK_BOARD_ID, true);
+  fetchTrelloItemsFromOneBoard(process.env.TRELLO_PERSONAL_BOARD_ID, false);
 }
 
 function fetchMostRecentPhotos() {
@@ -263,54 +278,51 @@ function fetchMostRecentPhotos() {
   });
 }
 
+function processFoodData(data) {
+  todaysMacros = {
+    kcal: data["calories"],
+    carbs: data["carbs"],
+    protein: data["protein"],
+    fat: data["fat"]
+  };
+
+  todaysFoodItems = [];
+  for (let rawFoodItemIndex in data["entries"]) {
+    let rawFoodItem = data["entries"][rawFoodItemIndex];
+    if (
+      ![
+        "TOTAL:",
+        "Exercises",
+        "Withings Health Mate  calorie adjustment"
+      ].includes(rawFoodItem["name"])
+    ) {
+      todaysFoodItems.push({
+        name: rawFoodItem["name"],
+        amount: rawFoodItem["amount"]
+      });
+    }
+  }
+}
+
 function updateFoodData() {
   mfp.fetchSingleDate(
     myFitnessPalUser,
     moment().format("YYYY-MM-DD"),
     ["calories", "protein", "carbs", "fat", "entries"],
     function(data) {
-      todaysMacros = {
-        kcal: data["calories"],
-        carbs: data["carbs"],
-        protein: data["protein"],
-        fat: data["fat"]
-      };
-
-      todaysFoodItems = [];
-      for (let rawFoodItemIndex in data["entries"]) {
-        let rawFoodItem = data["entries"][rawFoodItemIndex];
-        if (
-          ![
-            "TOTAL:",
-            "Exercises",
-            "Withings Health Mate  calorie adjustment"
-          ].includes(rawFoodItem["name"])
-        ) {
-          todaysFoodItems.push({
-            name: rawFoodItem["name"],
-            amount: rawFoodItem["amount"]
-          });
-        }
-      }
-      // TODO: use promises and reduce duplicate code
-
-      if (todaysMacros.kcal == undefined || todaysMacros.kcal == 0) {
-        // time zones and stuff, going back to yesterday
+      if (data["calories"] == undefined || data["calories"] == 0) {
         mfp.fetchSingleDate(
           myFitnessPalUser,
           moment()
             .subtract(1, "day")
             .format("YYYY-MM-DD"),
-          ["calories", "protein", "carbs", "fat"],
+          ["calories", "protein", "carbs", "fat", "entries"],
           function(data) {
-            todaysMacros = {
-              kcal: data["calories"],
-              carbs: data["carbs"],
-              protein: data["protein"],
-              fat: data["fat"]
-            };
+            processFoodData(data);
           }
         );
+      } else {
+        processFoodData(data);
       }
     }
   );
@@ -388,17 +400,17 @@ function allDataLoaded() {
 
 // The first number is the # of minutes to wait to reload
 setInterval(updateNomadListData, 60 * 60 * 1000);
-setInterval(updateMood, 30 * 60 * 1000);
-setInterval(fetchMostRecentPhotos, 30 * 60 * 1000);
+//setInterval(updateMood, 30 * 60 * 1000);
+//setInterval(fetchMostRecentPhotos, 30 * 60 * 1000);
 // setInterval(updateCalendar, 15 * 60 * 1000);
 setInterval(updateCommitMessage, 5 * 60 * 1000);
 setInterval(updateFoodData, 15 * 60 * 1000);
 setInterval(fetchTrelloItems, 15 * 60 * 1000);
 
 fetchTrelloItems();
-fetchMostRecentPhotos();
+//fetchMostRecentPhotos();
 updateNomadListData();
-updateMood();
+//updateMood();
 // updateCalendar();
 updateConferences();
 updateCommitMessage();
@@ -417,7 +429,8 @@ function getDataDic() {
     nextEvents: nextEvents,
     nextStays: nextStays,
     isMoving: isMoving,
-    numberOfTodoItems: numberOfTodoItems,
+    numberOfPersonalTodoItems: numberOfPersonalTodoItems,
+    numberOfWorkTodoItems: numberOfWorkTodoItems,
     lastCommitMessage: lastCommitMessage,
     lastCommitRepo: lastCommitRepo,
     lastCommitLink: lastCommitLink,
@@ -428,7 +441,7 @@ function getDataDic() {
     localTime: moment()
       .subtract(-1, "hours") // -1 = VIE, 5 = NYC, 8 = SF
       .format("hh:mm a"), // TODO: actually take the current time zone - nomadlist doens't seem to expose the time zone
-    profilePictureUrl: "https://krausefx.com/assets/FelixKrauseCropped.jpg",
+    profilePictureUrl: "https://akos.dev/profile.jpg",
     recentPhotos: recentPhotos
   };
 }

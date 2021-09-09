@@ -1,5 +1,5 @@
-let host = "https://instapipe.herokuapp.com/"
-let userId = "4409072"
+let host = "https://instapipe-akos.herokuapp.com/"
+let userId = "1700501392"
 
 var storiesToShow = null;
 var timeOutForPhotos = 4.0;
