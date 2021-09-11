@@ -43,6 +43,22 @@ var todaysFoodItems = [];
 var numberOfPersonalTodoItems;
 var numberOfWorkTodoItems;
 var latestSwarmCheckin = null;
+function timestampToWhen(timestamp) {
+    var currentDate = Math.floor(new Date().getTime() / 1000);
+    if (currentDate - timestamp < 60 * 60 * 2) {
+        return "just now";
+    }
+    if (currentDate - timestamp < 60 * 60 * 6) {
+        return "a few hours ago";
+    }
+    if (currentDate - timestamp < 60 * 60 * 12) {
+        return "today";
+    }
+    if (currentDate - timestamp < 60 * 60 * 24 * 3) {
+        return "this week";
+    }
+    return "long ago";
+}
 // Refresher methods
 function updateSwarmCheckin() {
     var foursquareUrl = "https://api.foursquare.com/v2/users/self/checkins?oauth_token=" +
@@ -56,10 +72,15 @@ function updateSwarmCheckin() {
         else if (response.statusCode == 200) {
             var parsedFoursquareData = body;
             var latestCheckin = (_c = (_b = (_a = parsedFoursquareData === null || parsedFoursquareData === void 0 ? void 0 : parsedFoursquareData["response"]) === null || _a === void 0 ? void 0 : _a["checkins"]) === null || _b === void 0 ? void 0 : _b["items"]) === null || _c === void 0 ? void 0 : _c[0];
-            latestSwarmCheckin = {
-                name: (_d = latestCheckin === null || latestCheckin === void 0 ? void 0 : latestCheckin["venue"]) === null || _d === void 0 ? void 0 : _d["name"],
-                formattedAddress: (_f = (_e = latestCheckin === null || latestCheckin === void 0 ? void 0 : latestCheckin["venue"]) === null || _e === void 0 ? void 0 : _e["location"]) === null || _f === void 0 ? void 0 : _f["formattedAddress"].join(", ")
-            };
+            if (latestCheckin) {
+                latestSwarmCheckin = {
+                    name: (_d = latestCheckin === null || latestCheckin === void 0 ? void 0 : latestCheckin["venue"]) === null || _d === void 0 ? void 0 : _d["name"],
+                    formattedAddress: (_f = (_e = latestCheckin === null || latestCheckin === void 0 ? void 0 : latestCheckin["venue"]) === null || _e === void 0 ? void 0 : _e["location"]) === null || _f === void 0 ? void 0 : _f["formattedAddress"].join(", "),
+                    when: latestCheckin["createdAt"]
+                        ? timestampToWhen(latestCheckin["createdAt"])
+                        : ""
+                };
+            }
             finishedLoadingSwarm = true;
             console.log("Successfully loaded Foursquare/Swarm data: " +
                 latestSwarmCheckin["name"] +

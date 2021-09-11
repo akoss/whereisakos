@@ -31,6 +31,7 @@ interface Conference {
 interface Checkin {
   name: String;
   formattedAddress: String;
+  when: String;
 }
 
 interface Stay {
@@ -87,6 +88,23 @@ let numberOfPersonalTodoItems: number;
 let numberOfWorkTodoItems: number;
 let latestSwarmCheckin: Checkin = null;
 
+function timestampToWhen(timestamp) {
+  let currentDate = Math.floor(new Date().getTime() / 1000);
+  if (currentDate - timestamp < 60 * 60 * 2) {
+    return "just now";
+  }
+  if (currentDate - timestamp < 60 * 60 * 6) {
+    return "a few hours ago";
+  }
+  if (currentDate - timestamp < 60 * 60 * 12) {
+    return "today";
+  }
+  if (currentDate - timestamp < 60 * 60 * 24 * 3) {
+    return "this week";
+  }
+  return "long ago";
+}
+
 // Refresher methods
 function updateSwarmCheckin() {
   let foursquareUrl =
@@ -102,12 +120,17 @@ function updateSwarmCheckin() {
       let latestCheckin =
         parsedFoursquareData?.["response"]?.["checkins"]?.["items"]?.[0];
 
-      latestSwarmCheckin = {
-        name: latestCheckin?.["venue"]?.["name"],
-        formattedAddress: latestCheckin?.["venue"]?.["location"]?.[
-          "formattedAddress"
-        ].join(", ")
-      };
+      if (latestCheckin) {
+        latestSwarmCheckin = {
+          name: latestCheckin?.["venue"]?.["name"],
+          formattedAddress: latestCheckin?.["venue"]?.["location"]?.[
+            "formattedAddress"
+          ].join(", "),
+          when: latestCheckin["createdAt"]
+            ? timestampToWhen(latestCheckin["createdAt"])
+            : ""
+        };
+      }
 
       finishedLoadingSwarm = true;
       console.log(
