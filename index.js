@@ -11,6 +11,7 @@ app.use(cors());
 // Metadata
 var nomadlistUser = "akos";
 var nomadlistKey = process.env.NOMADLIST_KEY;
+var foursquareToken = process.env.FOURSQUARE_TOKEN;
 var lifesheetURL = "https://fx-life-sheet.herokuapp.com/";
 var googleMapsKey = "AIzaSyDeiw5iiluUP6Txt7H584no1adlsDj-jUc";
 var githubUser = "akoss";
@@ -18,6 +19,7 @@ var githubFullName = "Akos Szente";
 var myFitnessPalUser = "akosur";
 // Cache
 var finishedLoadingNomadList = false;
+var finishedLoadingSwarm = false;
 var currentCityText = null;
 var currentLat = null;
 var currentLng = null;
@@ -40,7 +42,32 @@ var todaysMacros;
 var todaysFoodItems = [];
 var numberOfPersonalTodoItems;
 var numberOfWorkTodoItems;
+var latestSwarmCheckin = null;
 // Refresher methods
+function updateSwarmCheckin() {
+    var foursquareUrl = "https://api.foursquare.com/v2/users/self/checkins?oauth_token=" +
+        foursquareToken +
+        "&limit=1&sort=newestfirst&v=20210911";
+    needle.get(foursquareUrl, function (error, response, body) {
+        var _a, _b, _c, _d, _e, _f;
+        if (error) {
+            console.log(error);
+        }
+        else if (response.statusCode == 200) {
+            var parsedFoursquareData = body;
+            var latestCheckin = (_c = (_b = (_a = parsedFoursquareData === null || parsedFoursquareData === void 0 ? void 0 : parsedFoursquareData["response"]) === null || _a === void 0 ? void 0 : _a["checkins"]) === null || _b === void 0 ? void 0 : _b["items"]) === null || _c === void 0 ? void 0 : _c[0];
+            latestSwarmCheckin = {
+                name: (_d = latestCheckin === null || latestCheckin === void 0 ? void 0 : latestCheckin["venue"]) === null || _d === void 0 ? void 0 : _d["name"],
+                formattedAddress: (_f = (_e = latestCheckin === null || latestCheckin === void 0 ? void 0 : latestCheckin["venue"]) === null || _e === void 0 ? void 0 : _e["location"]) === null || _f === void 0 ? void 0 : _f["formattedAddress"].join(", ")
+            };
+            finishedLoadingSwarm = true;
+            console.log("Successfully loaded Foursquare/Swarm data: " +
+                latestSwarmCheckin["name"] +
+                ", " +
+                latestSwarmCheckin["formattedAddress"]);
+        }
+    });
+}
 function updateNomadListData() {
     nextStays = [];
     var nomadlistUrl = "https://nomadlist.com/@" +
@@ -311,7 +338,7 @@ function generateMapsUrl() {
         googleMapsKey);
 }
 function allDataLoaded() {
-    if (!finishedLoadingNomadList) {
+    if (!finishedLoadingNomadList || !finishedLoadingSwarm) {
         return false;
     }
     if (lastCommitMessage == null) {
@@ -321,6 +348,7 @@ function allDataLoaded() {
 }
 // The first number is the # of minutes to wait to reload
 setInterval(updateNomadListData, 60 * 60 * 1000);
+setInterval(updateSwarmCheckin, 5 * 60 * 1000);
 //setInterval(updateMood, 30 * 60 * 1000);
 //setInterval(fetchMostRecentPhotos, 30 * 60 * 1000);
 // setInterval(updateCalendar, 15 * 60 * 1000);
@@ -330,6 +358,7 @@ setInterval(fetchTrelloItems, 15 * 60 * 1000);
 fetchTrelloItems();
 //fetchMostRecentPhotos();
 updateNomadListData();
+updateSwarmCheckin();
 //updateMood();
 // updateCalendar();
 updateConferences();
@@ -350,6 +379,7 @@ function getDataDic() {
         isMoving: isMoving,
         numberOfPersonalTodoItems: numberOfPersonalTodoItems,
         numberOfWorkTodoItems: numberOfWorkTodoItems,
+        latestSwarmCheckin: latestSwarmCheckin,
         lastCommitMessage: lastCommitMessage,
         lastCommitRepo: lastCommitRepo,
         lastCommitLink: lastCommitLink,
