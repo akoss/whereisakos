@@ -7,6 +7,10 @@
     <meta name="description" content="Where is Akos?">
     <meta name="viewport" content="width=device-width, user-scalable=no" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/github-calendar@latest/dist/github-calendar-responsive.css"
+    />
 </head>
 
 <body *ngIf="data.loading">
@@ -160,7 +164,11 @@
       </div>
       <hr /> -->
 
-        <p style="text-align: center; margin-bottom: -6px; margin-top: -10px" class="footnote">Last code commit {{data.lastCommitTimestamp | amTimeAgo}}</p>
+        <h1 style="margin-bottom: 10px">Code contribution</h1>
+
+        <div style="width: 100%;"><a href="https://github.com/akoss" target="_blank"><div style="margin: auto; max-width: 100%; width: 800px;" [innerHtml]="data.githubContributionsChart | keepHtml" id="contributionsChart"></div></a></div>
+
+        <p style="text-align: center; margin-bottom: -6px;" class="footnote">Last public code commit {{data.lastCommitTimestamp | amTimeAgo}}</p>
         <h1 style="font-size: 25px; margin-bottom: 25px">
             <a href="{{data.lastCommitLink}}" target="_blank" style="color: #333 !important; text-decoration: underline !important">
           {{data.lastCommitMessage}}

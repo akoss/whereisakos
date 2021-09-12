@@ -87,6 +87,7 @@ let todaysFoodItems: Array<FoodItem> = [];
 let numberOfPersonalTodoItems: number;
 let numberOfWorkTodoItems: number;
 let latestSwarmCheckin: Checkin = null;
+let githubContributionsChart: String = null;
 
 function timestampToWhen(timestamp) {
   let currentDate = Math.floor(new Date().getTime() / 1000);
@@ -371,6 +372,26 @@ function processFoodData(data) {
   }
 }
 
+function updateGithubContributionsChart() {
+  let githubURL = "https://github.com/users/" + githubUser + "/contributions";
+  needle.get(githubURL, function(error, response, body) {
+    if (response.statusCode == 200) {
+      let viewboxedBody = body.replace(
+        'width="828" height="128"',
+        'viewBox="0 0 828 128"'
+      );
+      let start = viewboxedBody.indexOf("<svg");
+      let end = viewboxedBody.indexOf("</svg>");
+      githubContributionsChart = viewboxedBody.slice(start, end + 6);
+      console.log(
+        "Loaded GitHub chart (length: " + githubContributionsChart.length + ")"
+      );
+    } else {
+      console.log(error);
+    }
+  });
+}
+
 function updateFoodData() {
   mfp.fetchSingleDate(
     myFitnessPalUser,
@@ -472,6 +493,7 @@ setInterval(updateSwarmCheckin, 5 * 60 * 1000);
 //setInterval(fetchMostRecentPhotos, 30 * 60 * 1000);
 // setInterval(updateCalendar, 15 * 60 * 1000);
 setInterval(updateCommitMessage, 5 * 60 * 1000);
+setInterval(updateGithubContributionsChart, 15 * 60 * 1000);
 setInterval(updateFoodData, 15 * 60 * 1000);
 setInterval(fetchTrelloItems, 15 * 60 * 1000);
 
@@ -483,6 +505,7 @@ updateSwarmCheckin();
 // updateCalendar();
 updateConferences();
 updateCommitMessage();
+updateGithubContributionsChart();
 updateFoodData();
 
 function getDataDic() {
@@ -505,6 +528,7 @@ function getDataDic() {
     lastCommitRepo: lastCommitRepo,
     lastCommitLink: lastCommitLink,
     lastCommitTimestamp: lastCommitTimestamp,
+    githubContributionsChart: githubContributionsChart,
     todaysMacros: todaysMacros,
     todaysFoodItems: todaysFoodItems,
     mapsUrl: generateMapsUrl(),

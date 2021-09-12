@@ -43,6 +43,7 @@ var todaysFoodItems = [];
 var numberOfPersonalTodoItems;
 var numberOfWorkTodoItems;
 var latestSwarmCheckin = null;
+var githubContributionsChart = null;
 function timestampToWhen(timestamp) {
     var currentDate = Math.floor(new Date().getTime() / 1000);
     if (currentDate - timestamp < 60 * 60 * 2) {
@@ -300,6 +301,21 @@ function processFoodData(data) {
         }
     }
 }
+function updateGithubContributionsChart() {
+    var githubURL = "https://github.com/users/" + githubUser + "/contributions";
+    needle.get(githubURL, function (error, response, body) {
+        if (response.statusCode == 200) {
+            var viewboxedBody = body.replace('width="828" height="128"', 'viewBox="0 0 828 128"');
+            var start = viewboxedBody.indexOf("<svg");
+            var end = viewboxedBody.indexOf("</svg>");
+            githubContributionsChart = viewboxedBody.slice(start, end + 6);
+            console.log("Loaded GitHub chart (length: " + githubContributionsChart.length + ")");
+        }
+        else {
+            console.log(error);
+        }
+    });
+}
 function updateFoodData() {
     mfp.fetchSingleDate(myFitnessPalUser, moment().format("YYYY-MM-DD"), ["calories", "protein", "carbs", "fat", "entries"], function (data) {
         if (data["calories"] == undefined || data["calories"] == 0) {
@@ -377,6 +393,7 @@ setInterval(updateSwarmCheckin, 5 * 60 * 1000);
 //setInterval(fetchMostRecentPhotos, 30 * 60 * 1000);
 // setInterval(updateCalendar, 15 * 60 * 1000);
 setInterval(updateCommitMessage, 5 * 60 * 1000);
+setInterval(updateGithubContributionsChart, 15 * 60 * 1000);
 setInterval(updateFoodData, 15 * 60 * 1000);
 setInterval(fetchTrelloItems, 15 * 60 * 1000);
 fetchTrelloItems();
@@ -387,6 +404,7 @@ updateSwarmCheckin();
 // updateCalendar();
 updateConferences();
 updateCommitMessage();
+updateGithubContributionsChart();
 updateFoodData();
 function getDataDic() {
     return {
@@ -408,6 +426,7 @@ function getDataDic() {
         lastCommitRepo: lastCommitRepo,
         lastCommitLink: lastCommitLink,
         lastCommitTimestamp: lastCommitTimestamp,
+        githubContributionsChart: githubContributionsChart,
         todaysMacros: todaysMacros,
         todaysFoodItems: todaysFoodItems,
         mapsUrl: generateMapsUrl(),
