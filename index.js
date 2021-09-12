@@ -46,13 +46,16 @@ var latestSwarmCheckin = null;
 function timestampToWhen(timestamp) {
     var currentDate = Math.floor(new Date().getTime() / 1000);
     if (currentDate - timestamp < 60 * 60 * 2) {
-        return "just now";
+        return "recently";
     }
     if (currentDate - timestamp < 60 * 60 * 6) {
         return "a few hours ago";
     }
     if (currentDate - timestamp < 60 * 60 * 12) {
         return "today";
+    }
+    if (currentDate - timestamp < 60 * 60 * 24 * 2) {
+        return "yesterday";
     }
     if (currentDate - timestamp < 60 * 60 * 24 * 3) {
         return "this week";
