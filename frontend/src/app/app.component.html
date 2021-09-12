@@ -65,7 +65,7 @@
                 </tbody>
             </table>
 
-        <h1 style="font-size: 115%">Last seen at: <b>{{data.latestSwarmCheckin.name}} ({{data.latestSwarmCheckin.formattedAddress}})</b>, {{data.latestSwarmCheckin.when}}</h1>
+        <h1 *ngIf="data.latestSwarmCheckin.name" style="font-size: 115%">Last seen at: <b>{{data.latestSwarmCheckin.name}} ({{data.latestSwarmCheckin.formattedAddress}})</b>, {{data.latestSwarmCheckin.when}}</h1>
 
             <hr />
             <span *ngIf="data.currentMoodLevel">
