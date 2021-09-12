@@ -69,7 +69,7 @@ export class DataService {
 
   getData() {
     // TODO: Update the URL once we have api.whereisfelix.today
-    return this.http.get<MyData>("https://s03.akos.dev/whereisakos-api/api.json").pipe(
+    return this.http.get<MyData>("http://localhost:8080/api.json").pipe(
       retry(3), // retry a failed request up to 3 times
       catchError(this.handleError) // then handle the error
     );

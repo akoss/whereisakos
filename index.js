@@ -4,10 +4,12 @@ var express = require("express");
 var needle = require("needle");
 var moment = require("moment");
 var ical = require("ical");
+var bodyParser = require("body-parser");
 var app = express();
 var cors = require("cors");
 var mfp = require("mfp"); // MyFitnessPal
 app.use(cors());
+app.use(bodyParser.json({ limit: "50mb" }));
 // Metadata
 var nomadlistUser = "akos";
 var nomadlistKey = process.env.NOMADLIST_KEY;
@@ -44,6 +46,9 @@ var numberOfPersonalTodoItems;
 var numberOfWorkTodoItems;
 var latestSwarmCheckin = null;
 var githubContributionsChart = null;
+var lastWorkout = null;
+var lastActivities = [];
+var lastActivityUpdate = null;
 function timestampToWhen(timestamp) {
     var currentDate = Math.floor(new Date().getTime() / 1000);
     if (currentDate - timestamp < 60 * 60 * 2) {
@@ -429,6 +434,9 @@ function getDataDic() {
         githubContributionsChart: githubContributionsChart,
         todaysMacros: todaysMacros,
         todaysFoodItems: todaysFoodItems,
+        lastWorkout: lastWorkout,
+        lastActivities: lastActivities,
+        lastActivityUpdate: lastActivityUpdate,
         mapsUrl: generateMapsUrl(),
         localTime: moment()
             .subtract(-1, "hours") // -1 = VIE, 5 = NYC, 8 = SF
@@ -446,6 +454,44 @@ app.get("/api.json", function (req, res) {
             loading: true
         });
     }
+});
+app.post("/activity", function (req, res) {
+    // - Get the "Health Auto Export" app (https://apps.apple.com/hu/app/health-auto-export-json-csv/id1115567069)
+    // - Set up a scheduled API export to `/activity` with the last 7 days' data
+    //   (active energy, Apple exercise time, Apple stand hours) in JSON format and include workouts.
+    //
+    // TODO: persistency
+    var _a, _b, _c, _d, _e, _f, _g, _h;
+    console.log(JSON.stringify(req.body));
+    var metrics = (_b = (_a = req.body) === null || _a === void 0 ? void 0 : _a["data"]) === null || _b === void 0 ? void 0 : _b["metrics"];
+    if (!metrics)
+        res.sendStatus(400);
+    var activityPerDay = [];
+    var activeEnergy = metrics.filter(function (metric) { return metric["name"] === "active_energy"; });
+    var exerciseTime = metrics.filter(function (metric) { return metric["name"] === "apple_exercise_time"; });
+    var standHour = metrics.filter(function (metric) { return metric["name"] === "apple_stand_hour"; });
+    if (activeEnergy[0]["data"].length !== exerciseTime[0]["data"].length ||
+        exerciseTime[0]["data"].length !== standHour[0]["data"].length)
+        res.sendStatus(400);
+    for (var index = 0; index < activeEnergy[0]["data"].length; ++index) {
+        var day = {
+            activeEnergy: Math.round(activeEnergy[0]["data"][index]["qty"]),
+            exerciseTime: Math.round(exerciseTime[0]["data"][index]["qty"]),
+            standHour: standHour[0]["data"][index]["qty"]
+        };
+        activityPerDay.push(day);
+    }
+    var workouts = (_d = (_c = req.body) === null || _c === void 0 ? void 0 : _c["data"]) === null || _d === void 0 ? void 0 : _d["workouts"];
+    lastWorkout = workouts[0]
+        ? {
+            timestamp: (_e = workouts[0]) === null || _e === void 0 ? void 0 : _e.end,
+            activeEnergy: (_g = (_f = workouts[0]) === null || _f === void 0 ? void 0 : _f.activeEnergy) === null || _g === void 0 ? void 0 : _g.qty,
+            name: (_h = workouts[0]) === null || _h === void 0 ? void 0 : _h.name
+        }
+        : null;
+    lastActivities = activityPerDay;
+    lastActivityUpdate = new Date();
+    res.sendStatus(200);
 });
 var port = process.env.PORT || 8080;
 app.listen(port);
