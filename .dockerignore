@@ -1,0 +1,7 @@
+.DS_Store
+.git
+frontend
+.keys
+screenshots
+node_modules
+npm-debug.log
