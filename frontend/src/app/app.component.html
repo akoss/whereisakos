@@ -7,6 +7,10 @@
     <meta name="description" content="Where is Akos?">
     <meta name="viewport" content="width=device-width, user-scalable=no" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/github-calendar@latest/dist/github-calendar-responsive.css"
+    />
 </head>
 
 <body *ngIf="data.loading">
@@ -64,6 +68,9 @@
                     </tr>
                 </tbody>
             </table>
+
+        <h1 *ngIf="data.latestSwarmCheckin.name" style="font-size: 115%">Last seen at: <b><strong>{{data.latestSwarmCheckin.name}}</strong> ({{data.latestSwarmCheckin.formattedAddress}})</b>, {{data.latestSwarmCheckin.when}}</h1>
+
             <hr />
             <span *ngIf="data.currentMoodLevel">
         <h1 style="margin-bottom: 30px">
@@ -78,56 +85,83 @@
       <h1>{{data.localTime}}</h1>
       <hr />-->
 
-            <span *ngIf="data.todaysMacros.kcal > 0">
-        <h1 style="margin-bottom: 10px">Akos ate today</h1>
-        <div class="foodContainer">
-          <span>
-            <b>{{data.todaysMacros.kcal}} kcal</b><!-- of {{data.otherFxLifeData["macrosCarbs"]["value"] * 4 + data.otherFxLifeData["macrosProtein"]["value"] * 4 + data.otherFxLifeData["macrosFat"]["value"] * 9}} kcal-->
-          </span>
-            <span>
-            <b>{{data.todaysMacros.carbs}}g carbs</b><!-- of {{data.otherFxLifeData["macrosCarbs"]["value"]}}g -->
-          </span>
-            <span>
-            <b>{{data.todaysMacros.protein}}g protein</b><!-- of {{data.otherFxLifeData["macrosProtein"]["value"]}}g -->
-          </span>
-            <span>
-            <b>{{data.todaysMacros.fat}}g fat</b><!-- of {{data.otherFxLifeData["macrosFat"]["value"]}}g -->
-          </span>
-        </div>
+        <span *ngIf="data.todaysMacros.kcal > 0">
+            <h1 style="margin-bottom: 10px">Akos ate today</h1>
+            <div class="foodContainer">
+              <span>
+                <b><strong>{{data.todaysMacros.kcal}} kcal</strong></b><!-- of {{data.otherFxLifeData["macrosCarbs"]["value"] * 4 + data.otherFxLifeData["macrosProtein"]["value"] * 4 + data.otherFxLifeData["macrosFat"]["value"] * 9}} kcal-->
+              </span>
+                <span>
+                <b><strong>{{data.todaysMacros.carbs}}g carbs</strong></b><!-- of {{data.otherFxLifeData["macrosCarbs"]["value"]}}g -->
+              </span>
+                <span>
+                <b><strong>{{data.todaysMacros.protein}}g protein</strong></b><!-- of {{data.otherFxLifeData["macrosProtein"]["value"]}}g -->
+              </span>
+                <span>
+                <b><strong>{{data.todaysMacros.fat}}g fat</strong></b><!-- of {{data.otherFxLifeData["macrosFat"]["value"]}}g -->
+              </span>
+            </div>
 
-        <div class="foodEntries">
-            <table>
-                <tr *ngFor="let currentEntry of data.todaysFoodItems; index as i" class="{{i < 3 || showAllFood ? 'showAllFood' : 'foodDetailHidden'}}">
-                    <td>
-                        {{currentEntry.name}}
-                    </td>
-                    <td>
-                        {{currentEntry.amount}}
-                    </td>
-                </tr>
-                <tr *ngIf="data.todaysFoodItems.length > 3">
-                    <td colspan="2">
-                        <a class="viewAllFoodButton" (click)="toggleFood()">
-                            <span *ngIf="showAllFood">
-                    Hide food entries
-                  </span>
-                            <span *ngIf="!showAllFood">
-                    Show all food entries
-                  </span>
-                        </a>
-                    </td>
-                </tr>
-            </table>
-        </div>
-
-        <hr />
+            <div class="foodEntries">
+                <table>
+                    <tr *ngFor="let currentEntry of data.todaysFoodItems; index as i" class="{{i < 3 || showAllFood ? 'showAllFood' : 'foodDetailHidden'}}">
+                        <td>
+                            {{currentEntry.name}}
+                        </td>
+                        <td>
+                            {{currentEntry.amount}}
+                        </td>
+                    </tr>
+                    <tr *ngIf="data.todaysFoodItems.length > 3">
+                        <td colspan="2">
+                            <a class="viewAllFoodButton" (click)="toggleFood()">
+                                <span *ngIf="showAllFood">
+                        Hide food entries
+                      </span>
+                                <span *ngIf="!showAllFood">
+                        Show all food entries
+                      </span>
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </span>
+        <hr/>
+        <h1 style="margin-bottom: 10px">Activity goals</h1>
+        <span *ngIf="data.lastActivities[0]">
+            <h1 style="font-size: 115%; margin-top: 20px; margin-bottom: 5px;">Today</h1>
+            <div class="foodContainer">
+                <span><b>
+                    🔴 Move: <strong>{{data.lastActivities[data.lastActivities.length-1].activeEnergy}} kcal</strong>
+                </b></span>
+                <span><b>
+                    🟢 Exercise: <strong>{{data.lastActivities[data.lastActivities.length-1].exerciseTime}} minutes</strong>
+                </b></span>
+                <span><b>
+                    🔵 Stand: <strong>{{data.lastActivities[data.lastActivities.length-1].standHour}} hrs</strong><!-- of {{data.otherFxLifeData["macrosProtein"]["value"]}}g -->
+                </b></span>
+            </div>
+        </span>
+        <span *ngIf="data.lastActivities[1]">
+            <h1 style="font-size: 115%; margin-top: 20px; margin-bottom: 5px;">Yesterday</h1>
+            <div class="foodContainer">
+                <span><b>
+                    🔴 Move: <strong>{{data.lastActivities[data.lastActivities.length-2].activeEnergy}} kcal</strong>
+                </b></span>
+                <span><b>
+                    🟢 Exercise: <strong>{{data.lastActivities[data.lastActivities.length-2].exerciseTime}} minutes</strong>
+                </b></span>
+                <span><b>
+                    🔵 Stand: <strong>{{data.lastActivities[data.lastActivities.length-2].standHour}} hrs</strong><!-- of {{data.otherFxLifeData["macrosProtein"]["value"]}}g -->
+                </b></span>
+            </div>
+            <hr />
         </span>
 
-        <h1 style="margin-bottom: -12px; margin-top: -10px; font-size: 115%">Open personal Todo items</h1>
-        <h1><b>{{data.numberOfPersonalTodoItems}}</b></h1>
+        <h1 style="margin-top: -10px;">Open Todo items</h1>
+        <h1 style="font-size: 115%"><b><strong>{{data.numberOfPersonalTodoItems}}</strong> personal, <strong>{{data.numberOfWorkTodoItems}}</strong> work</b></h1>
 
-        <h1 style="margin-bottom: -12px; margin-top: -10px; font-size: 115%">Open work Todo items</h1>
-        <h1><b>{{data.numberOfWorkTodoItems}}</b></h1>
         <hr />
 
         <!--<div style="margin-top: 20px; margin-left: auto; margin-right: auto; text-align: left; width: 350px;">
@@ -157,7 +191,11 @@
       </div>
       <hr /> -->
 
-        <p style="text-align: center; margin-bottom: -6px; margin-top: -10px" class="footnote">Last code commit {{data.lastCommitTimestamp | amTimeAgo}}</p>
+        <h1 style="margin-bottom: 10px">Code contribution</h1>
+
+        <div style="width: 100%;"><a href="https://github.com/akoss" target="_blank"><div style="margin: auto; max-width: 100%; width: 800px;" [innerHtml]="data.githubContributionsChart | keepHtml" id="contributionsChart"></div></a></div>
+
+        <p style="text-align: center; margin-bottom: -6px;" class="footnote">Last public code commit {{data.lastCommitTimestamp | amTimeAgo}}</p>
         <h1 style="font-size: 25px; margin-bottom: 25px">
             <a href="{{data.lastCommitLink}}" target="_blank" style="color: #333 !important; text-decoration: underline !important">
           {{data.lastCommitMessage}}

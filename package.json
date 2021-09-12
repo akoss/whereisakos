@@ -21,6 +21,7 @@
   "homepage": "https://whereisfelix.today",
   "dependencies": {
     "@types/needle": "^2.5.1",
+    "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "ical": "^0.6.0",

@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { MomentModule } from 'ngx-moment';
-
+import { EscapeHtmlPipe } from './pipes/keep-html.pipe';
 
 import { AppComponent } from './app.component';
 
@@ -12,7 +12,8 @@ import { DataService } from './data.service'
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    EscapeHtmlPipe
   ],
   imports: [
     BrowserModule,

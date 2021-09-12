@@ -2,12 +2,15 @@ import * as express from "express";
 var needle = require("needle");
 var moment = require("moment");
 var ical = require("ical");
+var bodyParser = require("body-parser");
 
 var app = express();
+
 var cors = require("cors");
 var mfp = require("mfp"); // MyFitnessPal
 
 app.use(cors());
+app.use(bodyParser.json({ limit: "50mb" }));
 
 // Metadata
 let nomadlistUser = "akos";
@@ -56,6 +59,18 @@ interface Food {
   fat: Number;
 }
 
+interface Workout {
+  timestamp: String;
+  activeEnergy: Number;
+  name: String;
+}
+
+interface ActivityData {
+  activeEnergy: Number;
+  exerciseTime: Number;
+  standHour: Number;
+}
+
 interface FoodItem {
   name: String;
   amount: String; // lol MyFitnessPal, thx
@@ -87,6 +102,10 @@ let todaysFoodItems: Array<FoodItem> = [];
 let numberOfPersonalTodoItems: number;
 let numberOfWorkTodoItems: number;
 let latestSwarmCheckin: Checkin = null;
+let githubContributionsChart: String = null;
+let lastWorkout: Workout = null;
+let lastActivities: Array<ActivityData> = [];
+let lastActivityUpdate: Date = null;
 
 function timestampToWhen(timestamp) {
   let currentDate = Math.floor(new Date().getTime() / 1000);
@@ -371,6 +390,26 @@ function processFoodData(data) {
   }
 }
 
+function updateGithubContributionsChart() {
+  let githubURL = "https://github.com/users/" + githubUser + "/contributions";
+  needle.get(githubURL, function(error, response, body) {
+    if (response.statusCode == 200) {
+      let viewboxedBody = body.replace(
+        'width="828" height="128"',
+        'viewBox="0 0 828 128"'
+      );
+      let start = viewboxedBody.indexOf("<svg");
+      let end = viewboxedBody.indexOf("</svg>");
+      githubContributionsChart = viewboxedBody.slice(start, end + 6);
+      console.log(
+        "Loaded GitHub chart (length: " + githubContributionsChart.length + ")"
+      );
+    } else {
+      console.log(error);
+    }
+  });
+}
+
 function updateFoodData() {
   mfp.fetchSingleDate(
     myFitnessPalUser,
@@ -472,6 +511,7 @@ setInterval(updateSwarmCheckin, 5 * 60 * 1000);
 //setInterval(fetchMostRecentPhotos, 30 * 60 * 1000);
 // setInterval(updateCalendar, 15 * 60 * 1000);
 setInterval(updateCommitMessage, 5 * 60 * 1000);
+setInterval(updateGithubContributionsChart, 15 * 60 * 1000);
 setInterval(updateFoodData, 15 * 60 * 1000);
 setInterval(fetchTrelloItems, 15 * 60 * 1000);
 
@@ -483,6 +523,7 @@ updateSwarmCheckin();
 // updateCalendar();
 updateConferences();
 updateCommitMessage();
+updateGithubContributionsChart();
 updateFoodData();
 
 function getDataDic() {
@@ -505,8 +546,12 @@ function getDataDic() {
     lastCommitRepo: lastCommitRepo,
     lastCommitLink: lastCommitLink,
     lastCommitTimestamp: lastCommitTimestamp,
+    githubContributionsChart: githubContributionsChart,
     todaysMacros: todaysMacros,
     todaysFoodItems: todaysFoodItems,
+    lastWorkout: lastWorkout,
+    lastActivities: lastActivities,
+    lastActivityUpdate: lastActivityUpdate,
     mapsUrl: generateMapsUrl(),
     localTime: moment()
       .subtract(-1, "hours") // -1 = VIE, 5 = NYC, 8 = SF
@@ -524,6 +569,59 @@ app.get("/api.json", function(req, res) {
       loading: true
     });
   }
+});
+
+app.post("/activity", (req, res) => {
+  // - Get the "Health Auto Export" app (https://apps.apple.com/hu/app/health-auto-export-json-csv/id1115567069)
+  // - Set up a scheduled API export to `/activity` with the last 7 days' data
+  //   (active energy, Apple exercise time, Apple stand hours) in JSON format and include workouts.
+  //
+  // TODO: persistency
+
+  const metrics = req.body?.["data"]?.["metrics"];
+  if (!metrics) res.sendStatus(400);
+
+  const activityPerDay = [];
+
+  const activeEnergy = metrics.filter(
+    metric => metric["name"] === "active_energy"
+  );
+
+  const exerciseTime = metrics.filter(
+    metric => metric["name"] === "apple_exercise_time"
+  );
+
+  const standHour = metrics.filter(
+    metric => metric["name"] === "apple_stand_hour"
+  );
+
+  if (
+    activeEnergy[0]["data"].length !== exerciseTime[0]["data"].length ||
+    exerciseTime[0]["data"].length !== standHour[0]["data"].length
+  )
+    res.sendStatus(400);
+
+  for (let index = 0; index < activeEnergy[0]["data"].length; ++index) {
+    const day = {
+      activeEnergy: Math.round(activeEnergy[0]["data"][index]["qty"]),
+      exerciseTime: Math.round(exerciseTime[0]["data"][index]["qty"]),
+      standHour: standHour[0]["data"][index]["qty"]
+    };
+    activityPerDay.push(day);
+  }
+
+  const workouts = req.body?.["data"]?.["workouts"];
+  lastWorkout = workouts[0]
+    ? {
+        timestamp: workouts[0]?.end,
+        activeEnergy: workouts[0]?.activeEnergy?.qty,
+        name: workouts[0]?.name
+      }
+    : null;
+  lastActivities = activityPerDay;
+  lastActivityUpdate = new Date();
+
+  res.sendStatus(200);
 });
 
 var port = process.env.PORT || 8080;
