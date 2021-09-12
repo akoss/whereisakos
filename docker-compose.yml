@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      TRELLO_API_KEY: ${TRELLO_API_KEY}
+      TRELLO_API_TOKEN: ${TRELLO_API_TOKEN}
+      TRELLO_PERSONAL_BOARD_ID: ${TRELLO_PERSONAL_BOARD_ID}
+      TRELLO_WORK_BOARD_ID: ${TRELLO_WORK_BOARD_ID}
+      NOMADLIST_KEY: ${NOMADLIST_KEY}
+      FOURSQUARE_TOKEN: ${FOURSQUARE_TOKEN}
