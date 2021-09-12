@@ -462,7 +462,6 @@ app.post("/activity", function (req, res) {
     //
     // TODO: persistency
     var _a, _b, _c, _d, _e, _f, _g, _h;
-    console.log(JSON.stringify(req.body));
     var metrics = (_b = (_a = req.body) === null || _a === void 0 ? void 0 : _a["data"]) === null || _b === void 0 ? void 0 : _b["metrics"];
     if (!metrics)
         res.sendStatus(400);
@@ -484,8 +483,8 @@ app.post("/activity", function (req, res) {
     var workouts = (_d = (_c = req.body) === null || _c === void 0 ? void 0 : _c["data"]) === null || _d === void 0 ? void 0 : _d["workouts"];
     lastWorkout = workouts[0]
         ? {
-            timestamp: (_e = workouts[0]) === null || _e === void 0 ? void 0 : _e.end,
-            activeEnergy: (_g = (_f = workouts[0]) === null || _f === void 0 ? void 0 : _f.activeEnergy) === null || _g === void 0 ? void 0 : _g.qty,
+            timestamp: new Date((_e = workouts[0]) === null || _e === void 0 ? void 0 : _e.end),
+            activeEnergy: Math.round((_g = (_f = workouts[0]) === null || _f === void 0 ? void 0 : _f.activeEnergy) === null || _g === void 0 ? void 0 : _g.qty),
             name: (_h = workouts[0]) === null || _h === void 0 ? void 0 : _h.name
         }
         : null;

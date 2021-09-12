@@ -60,7 +60,7 @@ interface Food {
 }
 
 interface Workout {
-  timestamp: String;
+  timestamp: Date;
   activeEnergy: Number;
   name: String;
 }
@@ -613,8 +613,8 @@ app.post("/activity", (req, res) => {
   const workouts = req.body?.["data"]?.["workouts"];
   lastWorkout = workouts[0]
     ? {
-        timestamp: workouts[0]?.end,
-        activeEnergy: workouts[0]?.activeEnergy?.qty,
+        timestamp: new Date(workouts[0]?.end),
+        activeEnergy: Math.round(workouts[0]?.activeEnergy?.qty),
         name: workouts[0]?.name
       }
     : null;

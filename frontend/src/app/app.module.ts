@@ -2,6 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { MomentModule } from 'ngx-moment';
 import { EscapeHtmlPipe } from './pipes/keep-html.pipe';
+import { TimeAgoPipe } from 'time-ago-pipe';
 
 import { AppComponent } from './app.component';
 
@@ -13,7 +14,8 @@ import { DataService } from './data.service'
 @NgModule({
   declarations: [
     AppComponent,
-    EscapeHtmlPipe
+    EscapeHtmlPipe,
+    TimeAgoPipe
   ],
   imports: [
     BrowserModule,

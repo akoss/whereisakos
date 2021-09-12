@@ -128,7 +128,7 @@
             </div>
         </span>
         <hr/>
-        <h1 style="margin-bottom: 10px">Activity goals</h1>
+        <h1 style="margin-bottom: 10px">Akos moved today</h1>
         <span *ngIf="data.lastActivities[0]">
             <h1 style="font-size: 115%; margin-top: 20px; margin-bottom: 5px;">Today</h1>
             <div class="foodContainer">
@@ -156,9 +156,16 @@
                     🔵 Stand: <strong>{{data.lastActivities[data.lastActivities.length-2].standHour}} hrs</strong><!-- of {{data.otherFxLifeData["macrosProtein"]["value"]}}g -->
                 </b></span>
             </div>
-            <hr />
         </span>
-
+        <span *ngIf="data.lastWorkout">
+            <h1 style="font-size: 115%; margin-top: 20px; margin-bottom: 5px;">Last workout</h1>
+            <div class="foodContainer">
+                <span><b>
+                    <strong>{{data.lastWorkout.name}}</strong> ({{data.lastWorkout.activeEnergy}} kcal, {{data.lastWorkout.timestamp | timeAgo}})
+                </b></span>
+            </div>
+        </span>
+        <hr />
         <h1 style="margin-top: -10px;">Open Todo items</h1>
         <h1 style="font-size: 115%"><b><strong>{{data.numberOfPersonalTodoItems}}</strong> personal, <strong>{{data.numberOfWorkTodoItems}}</strong> work</b></h1>
 
