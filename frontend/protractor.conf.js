@@ -12,7 +12,7 @@ exports.config = {
     'browserName': 'chrome'
   },
   directConnect: true,
-  baseUrl: 'https://whereisakos-api.herokuapp.com/',
+  baseUrl: 'https://s03.akos.dev/whereisakos-api/',
   framework: 'jasmine',
   jasmineNodeOpts: {
     showColors: true,
