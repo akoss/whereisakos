@@ -310,6 +310,7 @@ function fetchTrelloItemsFromOneBoard(board_id, isWork) {
     let numberOfTodoItems = 0;
     if (error) {
       console.error(error);
+      return;
     }
     if (response.statusCode == 200) {
       for (var i in body) {
